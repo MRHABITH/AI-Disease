@@ -1,6 +1,6 @@
 import streamlit as st
 from PIL import Image
-from models.checking import (
+from model_run.checking import (
     detect_image_type,
     train_and_save_models,
     predict_disease
