@@ -2,7 +2,6 @@ import streamlit as st
 from PIL import Image
 from model_run.checking import (
     detect_image_type,
-    train_and_save_models,
     predict_disease
 )
 
@@ -13,13 +12,6 @@ st.set_page_config(page_title="AI Disease Diagnosis", page_icon="🧠", layout="
 
 st.title("🩺 AI-Based Disease Diagnosis System")
 st.write("An integrated CNN-powered system to detect **Brain Tumor** and **Pneumonia** from medical images.")
-
-# ---------------- TRAINING SECTION ----------------
-with st.expander("⚙️ Optional: Train Models"):
-    st.info("Train both models using your datasets. (Takes time)")
-    if st.button("Start Training"):
-        train_and_save_models()
-        st.success("✅ Models Trained and Saved!")
 
 # ---------------- MODE SELECTION ----------------
 st.divider()
