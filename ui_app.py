@@ -1,47 +1,52 @@
 import streamlit as st
 from PIL import Image
-from model_run.checking import predict_disease
-
-st.set_page_config(
-    page_title="AI-Based Disease Diagnosis",
-    page_icon="🧠",
-    layout="centered",
+from models.checking import (
+    detect_image_type,
+    train_and_save_models,
+    predict_disease
 )
+
+# ================================================
+# 🎨 STREAMLIT UI
+# ================================================
+st.set_page_config(page_title="AI Disease Diagnosis", page_icon="🧠", layout="centered")
 
 st.title("🩺 AI-Based Disease Diagnosis System")
-st.write("First select the image type, then upload the image for disease prediction.")
+st.write("An integrated CNN-powered system to detect **Brain Tumor** and **Pneumonia** from medical images.")
 
-# -------------------------------
-# Step 1: Select image type
-# -------------------------------
-img_type = st.selectbox(
-    "Select Image Type:",
-    ["Select", "MRI", "X-ray"]
-)
+# ---------------- TRAINING SECTION ----------------
+with st.expander("⚙️ Optional: Train Models"):
+    st.info("Train both models using your datasets. (Takes time)")
+    if st.button("Start Training"):
+        train_and_save_models()
+        st.success("✅ Models Trained and Saved!")
 
-if img_type != "Select":
-    st.info(f"Selected Image Type: **{img_type}**")
+# ---------------- MODE SELECTION ----------------
+st.divider()
+mode = st.radio("Select Mode", ["Manual Selection", "Auto Detect"])
 
-    # -------------------------------
-    # Step 2: Upload Image
-    # -------------------------------
-    uploaded_file = st.file_uploader(
-        f"Upload a {img_type} image",
-        type=["png", "jpg", "jpeg"]
-    )
+if mode == "Manual Selection":
+    diagnosis_type = st.radio("Choose Diagnosis Type", ["Brain Tumor Detection", "Chest X-Ray Analysis"])
+else:
+    diagnosis_type = None  # determined later
 
-    if uploaded_file:
-        image = Image.open(uploaded_file)
-        st.image(image, caption=f"Uploaded {img_type} Image", use_container_width=True)
+# ---------------- IMAGE UPLOAD ----------------
+uploaded_file = st.file_uploader("Upload an MRI or X-ray Image", type=["jpg", "jpeg", "png"])
 
-        # -------------------------------
-        # Step 3: Predict Disease
-        # -------------------------------
-        if st.button("Predict Disease"):
-            with st.spinner("Analyzing image..."):
-                result = predict_disease(image, img_type)
+if uploaded_file:
+    image = Image.open(uploaded_file)
+    st.image(image, caption="Uploaded Image", use_container_width=True)
 
-            st.success(f"Prediction Result: **{result}**")
+    # Auto detect type
+    if mode == "Auto Detect":
+        diagnosis_type = detect_image_type(image)
+        st.info(f"🧭 Detected Image Type: **{diagnosis_type}**")
 
-# Footer
-st.caption("© 2025 M Sabari | AI-Powered Medical Diagnosis System")
+    # Perform prediction
+    if diagnosis_type:
+        st.write(f"Running {diagnosis_type} model...")
+        result = predict_disease(image, diagnosis_type)
+        st.success(result)
+
+st.markdown("---")
+st.caption("© 2025 Neural Gen-AI Networks | AI-Powered Medical Diagnosis System")
