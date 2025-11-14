@@ -12,7 +12,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-st.title("🧠 AI-Based Disease Diagnosis System")
+st.title("🩺 AI-Based Disease Diagnosis System")
 st.write("Upload a Brain MRI or Chest X-ray image and the system will automatically detect the type and predict the disease.")
 
 # -------------------------------
