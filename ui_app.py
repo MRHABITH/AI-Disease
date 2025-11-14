@@ -41,4 +41,4 @@ if uploaded_file:
         st.success(result)
 
 st.markdown("---")
-st.caption("© 2025 Neural Gen-AI Networks | AI-Powered Medical Diagnosis System")
+st.caption("© 2025 M Sabari | AI-Powered Medical Diagnosis System")
