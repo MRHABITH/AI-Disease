@@ -2,7 +2,9 @@ import streamlit as st
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.image import img_to_array
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageFilter
+from skimage.filters import threshold_otsu
+from skimage import exposure
 import os
 
 # -------------------------------
@@ -36,23 +38,63 @@ def detect_image_type(image: Image.Image) -> str:
     gray = image.convert("L")
     arr = np.array(gray)
 
-    # Features
+    # -----------------------------
+    # FEATURE 1: Average brightness
+    # -----------------------------
     avg_intensity = np.mean(arr)
+
+    # -----------------------------
+    # FEATURE 2: Contrast
+    # -----------------------------
     contrast = np.std(arr)
 
-    # Edge detection (X-ray edges are stronger)
+    # -----------------------------
+    # FEATURE 3: Edge Strength
+    # -----------------------------
     edges = gray.filter(ImageFilter.FIND_EDGES)
     edge_strength = np.mean(np.array(edges))
 
-    # Rule-based classification
+    # -----------------------------
+    # FEATURE 4: Entropy (texture)
+    # X-rays = high entropy (bones)
+    # MRI = smoother image
+    # -----------------------------
+    hist = exposure.histogram(arr)[0]
+    hist = hist / np.sum(hist)
+    entropy = -np.sum([p * np.log2(p) for p in hist if p > 0])
+
+    # -----------------------------
+    # FEATURE 5: Bright bone area
+    # X-rays have large bright regions (white bones)
+    # -----------------------------
+    try:
+        otsu = threshold_otsu(arr)
+    except:
+        otsu = 140
+
+    bright_pixels = np.sum(arr > otsu)
+    bright_ratio = bright_pixels / arr.size
+
+    # -----------------------------
+    # Weighted scoring system
+    # -----------------------------
     score = 0
 
-    # X-ray features
-    if avg_intensity > 130: score += 1
-    if contrast > 55: score += 1
+    # X-ray indicators
+    if avg_intensity > 135: score += 1.5
+    if contrast > 55: score += 1.5
     if edge_strength > 40: score += 1
+    if entropy > 6.2: score += 1
+    if bright_ratio > 0.18: score += 2  # strong feature
 
-    # If score ≥ 2 → Chest X-ray
+    # MRI indicators (negatively score X-ray)
+    if avg_intensity < 120: score -= 1
+    if contrast < 48: score -= 1
+    if entropy < 5.8: score -= 1
+
+    # -----------------------------
+    # Final decision
+    # -----------------------------
     if score >= 2:
         return "Chest X-ray"
     else:
