@@ -33,15 +33,30 @@ brain_model, chest_model = load_models()
 # Image Type Detection
 # -------------------------------
 def detect_image_type(image: Image.Image) -> str:
-    img_gray = image.convert("L")
-    img_array = np.array(img_gray)
-    avg_intensity = np.mean(img_array)
-    aspect_ratio = image.width / image.height
+    gray = image.convert("L")
+    arr = np.array(gray)
 
-    if avg_intensity < 100 and 0.8 < aspect_ratio < 1.2:
-        return "Brain MRI"
-    else:
+    # Features
+    avg_intensity = np.mean(arr)
+    contrast = np.std(arr)
+
+    # Edge detection (X-ray edges are stronger)
+    edges = gray.filter(ImageFilter.FIND_EDGES)
+    edge_strength = np.mean(np.array(edges))
+
+    # Rule-based classification
+    score = 0
+
+    # X-ray features
+    if avg_intensity > 130: score += 1
+    if contrast > 55: score += 1
+    if edge_strength > 40: score += 1
+
+    # If score ≥ 2 → Chest X-ray
+    if score >= 2:
         return "Chest X-ray"
+    else:
+        return "Brain MRI"
 
 # -------------------------------
 # Predict Disease
