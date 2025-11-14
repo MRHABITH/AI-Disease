@@ -1,6 +1,6 @@
 streamlit
 tensorflow
-numpy
+numpy==1.24.3
 pillow
 opencv-python
 scikit-image==0.21.0
