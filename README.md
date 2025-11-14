@@ -1,3 +1,3 @@
 # AI-Disease
 
-# live : https://ai-disease-diagnosis-sabari.streamlit.app/
+Project live : https://ai-disease-diagnosis-sabari.streamlit.app/
